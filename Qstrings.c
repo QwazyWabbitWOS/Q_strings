@@ -66,13 +66,46 @@ size_t Q_strncatz(char* dst, size_t dstSize, const char* src)
     return (dLen + (s - src));    // returned count excludes NULL terminator
 }
 
+/*
+ * Copy src to string dst of size siz.  At most siz-1 characters
+ * will be copied.  Always NUL terminates (unless siz == 0).
+ * Returns strlen(src); if retval >= siz, truncation occurred.
+ */
+size_t Q_strlcpy(char* dst, const char* src, size_t siz)
+{
+    char* d = dst;
+    const char* s = src;
+    size_t n = siz;
+
+    /* Copy as many bytes as will fit */
+    if (n != 0 && --n != 0)
+    {
+        do
+        {
+            if ((*d++ = *s++) == 0)
+                break;
+        } while (--n != 0);
+    }
+
+    /* Not enough room in dst, add NUL and traverse rest of src */
+    if (n == 0)
+    {
+        if (siz != 0)
+            *d = '\0'; /* NUL-terminate dst */
+        while (*s++)
+            ; // counter loop
+    }
+
+    return (s - src - 1); /* count does not include NUL */
+}
+
 int main(int argc, char* argv[])
 {
-    size_t count;
+    size_t count, ocount;
     char dest[50];
     const char* src0 = "This proposed string is way too long for the destination.";
-    const char* src1 = "magic ";
-    const char* src2 = "eightball";
+    const char* src1 = "magic";
+    const char* src2 = " eightball";
     const char* src3 = " says \"You may rely on it.\"";
 
     printf("Begin testing Q_strncpyz and Q_strncatz.\n\n");
@@ -95,26 +128,41 @@ int main(int argc, char* argv[])
     assert(count == strlen(src0));
     if (strlen(dest) < strlen(src0)) {
         printf("\"%s\"\n\"%s\"\n", dest, src0);
-        puts("Q_strncpyz OK\n");
+        puts("Truncation detected Q_strncpyz OK\n");
     }
 
-    count = Q_strncatz(dest, sizeof dest, src0);
-    assert(count == strlen(dest) + strlen(src0));
+    printf("Test truncation modes.\n");
+    count = Q_strlcpy(dest, src0, sizeof dest);
+    assert(count == strlen(src0));
     if (strlen(dest) < strlen(src0)) {
         printf("\"%s\"\n\"%s\"\n", dest, src0);
-        puts("Q_strncatz OK\n");
+        puts("Truncation detected Q_strlcpy OK\n");
+    }
+
+    ocount = strlen(dest);
+    count = Q_strncatz(dest, sizeof dest, src0);
+    assert(count == strlen(dest) + strlen(src0));
+    if (count < ocount + strlen(src0)) {
+        printf("\"%s\"\n\"%s\"\n", dest, src0);
+        puts("Truncation detected Q_strncatz OK\n");
     }
 
     /* Normal pathways */
     count = Q_strncpyz(dest, sizeof dest, src1);
     assert(count == strlen(src1));
     printf("%s\n", dest);
+    
     count = Q_strncatz(dest, sizeof dest, src2);
     assert(count == strlen(dest));
     printf("%s\n", dest);
+ 
     count = Q_strncatz(dest, sizeof dest, src3);
     assert(count == strlen(dest));
     printf("%s\n\n", dest);
+ 
+    //count = Q_strlcpy(dest, src1, sizeof dest);
+    //assert(count == strlen(src1));
+    //printf("%s\n", dest);
 
     printf("Success testing Q_strncpyz and Q_strncatz.\n");
 }
