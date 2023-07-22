@@ -4,6 +4,7 @@
 
 #ifdef _WIN32
 #pragma warning(disable : 4996)	// deprecated CRT functions (_CRT_SECURE_NO_WARNINGS).
+#pragma warning(disable : 4100)	// unreferenced formal parameter.
 #endif
 
 // These two functions courtesy Knightmare.
@@ -151,20 +152,21 @@ int main(int argc, char* argv[])
     count = Q_strncpyz(dest, sizeof dest, src1);
     assert(count == strlen(src1));
     printf("%s\n", dest);
-    
+
     count = Q_strncatz(dest, sizeof dest, src2);
     assert(count == strlen(dest));
     printf("%s\n", dest);
- 
+
     count = Q_strncatz(dest, sizeof dest, src3);
     assert(count == strlen(dest));
     printf("%s\n\n", dest);
- 
+
     //count = Q_strlcpy(dest, src1, sizeof dest);
     //assert(count == strlen(src1));
     //printf("%s\n", dest);
 
     printf("Success testing Q_strncpyz and Q_strncatz.\n");
+    return 0;
 }
 
 /*
